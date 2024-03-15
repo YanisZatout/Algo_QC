@@ -36,9 +36,11 @@ void OpDiffIJKScalarGeneric_double::compute_flux_(IJK_Field_local_double& resu, 
   const int nx = _DIR_ == DIRECTION::X ? input_field_->ni() + 1 : input_field_->ni() ;
   const int ny = _DIR_ == DIRECTION::Y ? input_field_->nj() + 1 : input_field_->nj();
 
-  ConstIJK_double_ptr input_field(*input_field_, 0, 0, k_layer);
-  ConstIJK_double_ptr lambda(is_vectorial_? get_lambda_vectorial(_DIR_) : *lambda_, 0, 0, k_layer);
   const IJK_Field_local_double& dummy_field = *input_field_;
+  bool is_functional = !is_structural_;
+  ConstIJK_double_ptr lambda(is_functional ? (is_vectorial_? get_lambda_vectorial(_DIR_) : *lambda_) : dummy_field, 0, 0, k_layer);
+
+  ConstIJK_double_ptr input_field(*input_field_, 0, 0, k_layer);
   ConstIJK_double_ptr structural_model(is_structural_ ? get_structural_model(_DIR_) : dummy_field, 0, 0, k_layer);
 
   IJK_double_ptr resu_ptr(resu, 0, 0, 0);
@@ -137,7 +139,8 @@ void OpDiffIJKScalarGeneric_double::compute_flux_(IJK_Field_local_double& resu, 
       if (j+1==jmax)
         break;
       input_field.next_j();
-      lambda.next_j();
+      if(is_functional)
+        lambda.next_j();
       if(is_structural_)
         structural_model.next_j();
       resu_ptr.next_j();

@@ -135,7 +135,8 @@ void OpDiffIJKFacesGeneric_double::flux_loop_(IJK_Field_local_double& resu, int 
 
   const IJK_Field_local_double& dummy_field = vCOMPO;
 
-  ConstIJK_double_ptr molecular_nu(is_tensorial_? get_molecular_nu_tensor(_VCOMPO_, _DIR_) : get_molecular_nu(), 0, 0, k_layer);
+  bool is_functional_ = !is_structural_;
+  ConstIJK_double_ptr molecular_nu(is_functional_ ? (is_tensorial_? get_molecular_nu_tensor(_VCOMPO_, _DIR_) : get_molecular_nu()) : dummy_field , 0, 0, k_layer);
 
   ConstIJK_double_ptr div_ptr(with_divergence_ ? get_divergence() : dummy_field, 0, 0, k_layer);
 
@@ -184,7 +185,8 @@ void OpDiffIJKFacesGeneric_double::flux_loop_(IJK_Field_local_double& resu, int 
       vCOMPO_ptr.next_j();
       if(_DIR_ != _VCOMPO_)
         vDIR_ptr.next_j();
-      molecular_nu.next_j();
+      if(is_functional_)
+        molecular_nu.next_j();
       if(is_turb_)
         {
           turbulent_nu.next_j();
